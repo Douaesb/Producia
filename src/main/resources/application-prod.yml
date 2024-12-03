@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@//<HOST>:<PORT>/<DB_NAME>
+    driver-class-name: oracle.jdbc.OracleDriver
+    username: your_prod_user
+    password: your_prod_password
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  profiles:
+    active: prod
+
+logging:
+  level:
+    root: info
