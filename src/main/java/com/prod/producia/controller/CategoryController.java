@@ -2,7 +2,6 @@ package com.prod.producia.controller;
 
 import com.prod.producia.dto.categoryDto.CategoryRequestDTO;
 import com.prod.producia.dto.categoryDto.CategoryResponseDTO;
-import com.prod.producia.dto.productDto.ProductResponseDTO;
 import com.prod.producia.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,11 +31,6 @@ public class CategoryController {
         return categoryService.searchCategoriesByName(name, pageable);
     }
 
-//    @GetMapping("/user/categories/{categoryId}/products")
-//    public List<ProductResponseDTO> getProductsByCategory(@PathVariable("categoryId") Long categoryId, Pageable pageable) {
-//        log.info("Fetching products for category with ID: {} and pagination", categoryId);
-//        return categoryService.getProductsByCategory(categoryId, pageable);
-//    }
 
     @PostMapping("/admin/categories")
     public CategoryResponseDTO addCategory(@Valid @RequestBody CategoryRequestDTO categoryRequestDTO) {
