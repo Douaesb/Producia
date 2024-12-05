@@ -13,7 +13,6 @@ public interface ProductService {
 
     Page<ProductResponseDTO> getProductsByCategory(Long categoryId, Pageable pageable);
 
-
     ProductResponseDTO addProduct(ProductRequestDTO productRequestDTO);
 
     ProductResponseDTO updateProduct(Long id, ProductRequestDTO productRequestDTO);

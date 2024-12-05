@@ -15,5 +15,6 @@ public interface CategoryMapper {
 
     CategoryEmbeddedDTO toEmbeddedDTO(Category category);
 
-    void updateEntityFromDto(CategoryRequestDTO requestDTO, Category category);
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntityFromDto(CategoryRequestDTO dto, @MappingTarget Category category);
 }

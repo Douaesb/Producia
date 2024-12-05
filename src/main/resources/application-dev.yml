@@ -1,17 +1,11 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:mariadb://mariadb:3306/prodcat_db
+    username: root
+    password: douae
+    driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
-  profiles:
-    active: dev
-
-security:
-  basic:
-    enabled: false
-  bypass-authentication: true
+      ddl-auto: create-drop
+    properties:
+      hibernate.dialect: org.hibernate.dialect.MariaDBDialect

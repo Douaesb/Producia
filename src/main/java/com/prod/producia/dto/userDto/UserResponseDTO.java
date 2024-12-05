@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class UserResponseDTO {
     private Long id;
-    private String login;
+    private String username;
     private Boolean active;
     private RoleEmbeddedDTO role;
 }

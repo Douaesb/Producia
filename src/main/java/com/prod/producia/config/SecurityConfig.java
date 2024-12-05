@@ -1,5 +1,6 @@
 package com.prod.producia.config;
 
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -8,68 +9,86 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
+@AllArgsConstructor
 public class SecurityConfig {
 
+
+
+    private final DataSource dataSource;
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        JdbcDaoImpl jdbcDao = new JdbcDaoImpl();
+        jdbcDao.setDataSource(dataSource);
+
+        jdbcDao.setUsersByUsernameQuery(
+                "SELECT username, password, active FROM user WHERE username = ?"
+        );
+
+        jdbcDao.setAuthoritiesByUsernameQuery(
+                "SELECT username, CONCAT('ROLE_', role) AS authority FROM user WHERE username = ?"
+        );
+
+        return jdbcDao;
+    }
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    @Profile("dev")
-    @Configuration
-    public static class DevSecurityConfig {
-        @Bean
-        public HttpSecurity httpSecurity(HttpSecurity http) throws Exception {
-            http.csrf(AbstractHttpConfigurer::disable)
-                    .authorizeHttpRequests(authz -> authz
-                            .anyRequest().permitAll());
-            return http;
-        }
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder
+                .userDetailsService(userDetailsService())
+                .passwordEncoder(passwordEncoder());
+        return authenticationManagerBuilder.build();
     }
 
+
+    @Bean
     @Profile("prod")
-    @Configuration
-    public static class ProdSecurityConfig {
+    public SecurityFilterChain prodSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
+                        .anyRequest().authenticated()
+                )
+                .logout(logout -> logout
+                        .permitAll()
+                        .logoutSuccessUrl("/api/auth/login?logout=true")
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                );
 
-        private final javax.sql.DataSource dataSource;
-        private final PasswordEncoder passwordEncoder;
+        return http.build();
+    }
 
-        public ProdSecurityConfig(javax.sql.DataSource dataSource, PasswordEncoder passwordEncoder) {
-            this.dataSource = dataSource;
-            this.passwordEncoder = passwordEncoder;
-        }
+    @Bean
+    @Profile("dev")
+    public SecurityFilterChain devSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll()
+                );
 
-
-        @Bean
-        public HttpSecurity httpSecurity(HttpSecurity http) throws Exception {
-
-            http.csrf(AbstractHttpConfigurer::disable)
-                    .authorizeHttpRequests(authz -> authz
-                            .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                            .requestMatchers("/api/user/**").hasRole("USER")
-                            .anyRequest().authenticated());
-
-            return http;
-        }
-
-        @Bean
-        public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-
-            AuthenticationManagerBuilder authenticationManagerBuilder =
-                    http.getSharedObject(AuthenticationManagerBuilder.class);
-
-            authenticationManagerBuilder
-                    .jdbcAuthentication()
-                    .dataSource(dataSource)
-                    .usersByUsernameQuery("SELECT username, password, active FROM users WHERE username = ?")
-                    .passwordEncoder(passwordEncoder);
-
-            return authenticationManagerBuilder.build();
-        }
+        return http.build();
     }
 }

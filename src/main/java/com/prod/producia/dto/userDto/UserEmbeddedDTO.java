@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class UserEmbeddedDTO {
     private Long id;
-    private String login;
+    private String username;
 }

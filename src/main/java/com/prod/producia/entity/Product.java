@@ -14,7 +14,7 @@ public class Product {
     private Long id;
 
     @NotBlank(message = "Product name cannot be blank")
-    private String designation;
+    private String name;
 
     @NotNull(message = "Price cannot be null")
     @Min(value = 0, message = "Price must be at least 0")

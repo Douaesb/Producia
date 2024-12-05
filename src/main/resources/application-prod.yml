@@ -1,16 +1,12 @@
 spring:
   datasource:
-    url: jdbc:oracle:thin:@//<HOST>:<PORT>/<DB_NAME>
-    driver-class-name: oracle.jdbc.OracleDriver
-    username: your_prod_user
-    password: your_prod_password
+    url: jdbc:mariadb://mariadb:3306/prodcat_db
+    username: root
+    password: douae
+    driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
+    properties:
+      hibernate.dialect: org.hibernate.dialect.MariaDBDialect
     show-sql: false
-  profiles:
-    active: prod
-
-logging:
-  level:
-    root: info

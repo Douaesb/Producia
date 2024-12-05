@@ -13,7 +13,8 @@ public interface ProductMapper {
     ProductResponseDTO toResponseDTO(Product product);
 
     ProductEmbeddedDTO toEmbeddedDTO(Product product);
-    void updateEntityFromDto(ProductRequestDTO requestDTO, Product product);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntityFromDto(ProductRequestDTO productRequestDTO, @MappingTarget Product product);
 }
 
