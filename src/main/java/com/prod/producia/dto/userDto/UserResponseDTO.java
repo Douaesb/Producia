@@ -1,12 +1,17 @@
 package com.prod.producia.dto.userDto;
 
-import com.prod.producia.dto.roleDto.RoleEmbeddedDTO;
-import lombok.Data;
+import com.prod.producia.entity.enums.Role;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class UserResponseDTO {
+
     private Long id;
-    private String username;
+    private String email;
+    private Role role;
     private Boolean active;
-    private RoleEmbeddedDTO role;
 }

@@ -1,7 +1,15 @@
 spring:
   profiles:
-    active: dev
-  session:
-    store-type: jdbc
-    jdbc:
-      initialize-schema: always
+    active: prod
+
+    session:
+      store-type: jdbc
+      jdbc:
+        initialize-schema: always
+
+        spring:
+          session:
+            store-type: none
+            timeout:
+              # 30 minutes
+              default-max-inactivity-interval: 1800000

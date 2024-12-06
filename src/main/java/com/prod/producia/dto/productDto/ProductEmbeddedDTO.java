@@ -1,9 +1,13 @@
 package com.prod.producia.dto.productDto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class ProductEmbeddedDTO {
     private Long id;
-    private String name;
+    private String designation;
+    private Double price;
+    private Integer quantity;
 }

@@ -1,9 +1,13 @@
 package com.prod.producia.dto.categoryDto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class CategoryEmbeddedDTO {
     private Long id;
     private String name;
+    private String description;
+
 }

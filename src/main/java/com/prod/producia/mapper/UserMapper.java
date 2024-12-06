@@ -1,18 +1,17 @@
 package com.prod.producia.mapper;
 
-import com.prod.producia.dto.userDto.UserEmbeddedDTO;
 import com.prod.producia.dto.userDto.UserRequestDTO;
 import com.prod.producia.dto.userDto.UserResponseDTO;
 import com.prod.producia.entity.User;
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring", uses = {RoleMapper.class})
+@Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    User toEntity(UserRequestDTO dto);
+    User toEntity(UserRequestDTO userRequestDTO);
 
-    UserResponseDTO toResponseDTO(User user);
 
-    UserEmbeddedDTO toEmbeddedDTO(User user);
+    UserResponseDTO toResponse(User user);
 }
+
 

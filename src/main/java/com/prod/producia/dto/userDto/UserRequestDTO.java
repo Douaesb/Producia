@@ -2,9 +2,11 @@ package com.prod.producia.dto.userDto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class UserRequestDTO {
     @NotNull(message = "Login cannot be null")
     @Size(min = 3, max = 50, message = "Login must be between 3 and 50 characters")
@@ -14,6 +16,6 @@ public class UserRequestDTO {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
-    @NotNull(message = "Role ID cannot be null")
-    private Long roleId;
+    private String role;
+
 }

@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mariadb://mariadb:3306/prodcat_db
+    url: jdbc:mariadb://localhost:3306/prodcat_db
     username: root
     password: douae
     driver-class-name: org.mariadb.jdbc.Driver
@@ -10,3 +10,7 @@ spring:
     properties:
       hibernate.dialect: org.hibernate.dialect.MariaDBDialect
     show-sql: false
+  security:
+    jdbc:
+      authentication:
+        enabled: true

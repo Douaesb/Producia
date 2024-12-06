@@ -9,12 +9,12 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring", uses = {CategoryMapper.class})
 public interface ProductMapper {
 
+    @Mapping(source = "categoryId", target = "category.id")
     Product toEntity(ProductRequestDTO dto);
-    ProductResponseDTO toResponseDTO(Product product);
+
+    @Mapping(source = "category", target = "category")
+    ProductResponseDTO toResponseDTO(Product entity);
 
     ProductEmbeddedDTO toEmbeddedDTO(Product product);
-
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateEntityFromDto(ProductRequestDTO productRequestDTO, @MappingTarget Product product);
 }
 

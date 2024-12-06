@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class ProductResponseDTO {
     private Long id;
-    private String name;
+    private String designation;
     private Double price;
     private Integer quantity;
     private CategoryEmbeddedDTO category;

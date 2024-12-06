@@ -1,76 +1,85 @@
 package com.prod.producia.controller;
 
 import com.prod.producia.dto.userDto.UserRequestDTO;
-import com.prod.producia.dto.userDto.UserResponseDTO;
-import com.prod.producia.entity.User;
 import com.prod.producia.mapper.UserMapper;
+import com.prod.producia.entity.User;
 import com.prod.producia.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/auth")
+@AllArgsConstructor
+@Slf4j
 public class AuthController {
-    private UserService userService;
-    private UserMapper userMapper;
-    private AuthenticationManager authenticationManager;
-    private BCryptPasswordEncoder passwordEncoder;
+
+    private final AuthenticationManager authenticationManager;
+    private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDTO> register(@RequestBody @Valid UserRequestDTO userRequestDTO) {
-        if (userService.existsByUsername(userRequestDTO.getUsername())) {
-            return ResponseEntity.badRequest().body(null);
+    public ResponseEntity<String> register(@RequestBody UserRequestDTO userDTO) {
+        if (userService.existsByUsername(userDTO.getUsername())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Username is already taken.");
         }
 
-        String encodedPassword = passwordEncoder.encode(userRequestDTO.getPassword());
+        userDTO.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        User user = userMapper.toEntity(userDTO);
+        user.setActive(true);
 
-        User user = userMapper.toEntity(userRequestDTO);
-        user.setPassword(encodedPassword);
+        userService.saveUser(user);
+        log.info("User registered successfully with username: {}", userDTO.getUsername());
 
-        User savedUser = userService.save(user);
-
-        UserResponseDTO responseDTO = userMapper.toResponseDTO(savedUser);
-
-        return ResponseEntity.ok(responseDTO);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("User registered successfully.");
     }
 
-    // Login user
+
     @PostMapping("/login")
-    public ResponseEntity<UserResponseDTO> login(@RequestBody @Valid UserRequestDTO userRequestDTO, HttpServletRequest request) {
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(userRequestDTO.getUsername(), userRequestDTO.getPassword());
+    public ResponseEntity<String> login(@RequestBody @Validated UserRequestDTO loginRequest, HttpServletRequest request) {
+        try {
+            request.getSession(false);
+            request.getSession(true);
 
-        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+            var authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()
+                    )
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        User user = (User) authentication.getPrincipal();
+            request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 
-        HttpSession session = request.getSession();
-        session.setAttribute("user", user);
-
-        UserResponseDTO responseDTO = userMapper.toResponseDTO(user);
-
-        return ResponseEntity.ok(responseDTO);
+            log.info("User logged in successfully: {}", request.getSession().getAttribute("SPRING_SECURITY_CONTEXT"));
+            return ResponseEntity.ok("User logged in successfully.");
+        } catch (Exception e) {
+            log.error("Login failed for user: {}. Error: {}", loginRequest.getUsername(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
     }
+
+
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> logout(HttpServletRequest request) {
+        request.getSession().invalidate();
+        SecurityContextHolder.clearContext();
+
+        log.info("User logged out successfully.");
+        return ResponseEntity.ok("User logged out successfully.");
     }
+
 }

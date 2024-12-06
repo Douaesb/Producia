@@ -2,19 +2,21 @@ package com.prod.producia.service;
 
 import com.prod.producia.dto.categoryDto.CategoryRequestDTO;
 import com.prod.producia.dto.categoryDto.CategoryResponseDTO;
+import com.prod.producia.dto.productDto.ProductResponseDTO;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 
 public interface CategoryService {
 
-   Page<CategoryResponseDTO> getCategories(Pageable pageable);
+    Page<CategoryResponseDTO> listCategories(int page, int size, String sortBy);
 
-    Page<CategoryResponseDTO> searchCategoriesByName(String name, Pageable pageable);
+    Page<CategoryResponseDTO> searchCategories(String name, int page, int size, String sortBy);
+
+    Page<ProductResponseDTO> listProductsInCategory(Long categoryId, int page, int size, String sortBy);
 
     CategoryResponseDTO addCategory(CategoryRequestDTO categoryRequestDTO);
 
-    CategoryResponseDTO updateCategory(Long id, CategoryRequestDTO categoryRequestDTO);
+    CategoryResponseDTO updateCategory(Long categoryId, CategoryRequestDTO categoryRequestDTO) throws Exception;
 
-    void deleteCategory(Long id);
+    void deleteCategory(Long categoryId);
 }

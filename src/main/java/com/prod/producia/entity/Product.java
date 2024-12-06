@@ -1,31 +1,33 @@
 package com.prod.producia.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import jakarta.validation.constraints.*;
+import lombok.*;
 
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Data
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Product name cannot be blank")
-    private String name;
+    @NotBlank(message = "Designation cannot be blank")
+    private String designation;
 
-    @NotNull(message = "Price cannot be null")
-    @Min(value = 0, message = "Price must be at least 0")
+    @NotNull(message = "Price is required")
+    @Positive(message = "Price must be positive")
     private Double price;
 
-    @NotNull(message = "Quantity cannot be null")
-    @Min(value = 0, message = "Quantity must be at least 0")
+    @NotNull(message = "Quantity is required")
+    @Min(value = 0, message = "Quantity cannot be negative")
     private Integer quantity;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
-    @NotNull(message = "Category cannot be null")
     private Category category;
+
 }

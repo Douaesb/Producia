@@ -2,52 +2,66 @@ package com.prod.producia.controller;
 
 import com.prod.producia.dto.categoryDto.CategoryRequestDTO;
 import com.prod.producia.dto.categoryDto.CategoryResponseDTO;
+import com.prod.producia.dto.productDto.ProductResponseDTO;
 import com.prod.producia.service.CategoryService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
-@RequiredArgsConstructor
-@Slf4j
 @RequestMapping("/api")
 public class CategoryController {
 
-    private final CategoryService categoryService;
+    @Autowired
+    private CategoryService categoryService;
 
-    @GetMapping("/user/categories")
-    public Page<CategoryResponseDTO> getCategories(Pageable pageable) {
-        log.info("Fetching categories with pagination for user");
-        return categoryService.getCategories(pageable);
+    @GetMapping({"/user/categories", "/admin/categories"})
+    public Page<CategoryResponseDTO> listCategories(
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam(required = false) String sortBy) {
+        return categoryService.listCategories(page, size, sortBy);
     }
 
-    @GetMapping("/user/categories/search")
-    public Page<CategoryResponseDTO> searchCategoriesByName(@RequestParam("name") String name, Pageable pageable) {
-        log.info("Searching categories by name: {} with pagination", name);
-        return categoryService.searchCategoriesByName(name, pageable);
+    @GetMapping({"/user/categories/search", "/admin/categories/search"})
+    public Page<CategoryResponseDTO> searchCategories(
+            @RequestParam String name,
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam(required = false) String sortBy) {
+        return categoryService.searchCategories(name, page, size, sortBy);
     }
 
+    @GetMapping({"/user/categories/{categoryId}/products", "/admin/categories/{categoryId}/products"})
+    public Page<ProductResponseDTO> listProductsInCategory(
+            @PathVariable Long categoryId,
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam(required = false) String sortBy) {
+        return categoryService.listProductsInCategory(categoryId, page, size, sortBy);
+    }
 
     @PostMapping("/admin/categories")
-    public CategoryResponseDTO addCategory(@Valid @RequestBody CategoryRequestDTO categoryRequestDTO) {
-        log.info("Adding a new category: {}", categoryRequestDTO.getName());
-        return categoryService.addCategory(categoryRequestDTO);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CategoryResponseDTO> addCategory(@RequestBody CategoryRequestDTO categoryRequestDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.addCategory(categoryRequestDTO));
     }
 
-    @PutMapping("/admin/categories/{id}")
-    public CategoryResponseDTO updateCategory(@PathVariable("id") Long id,
-                                              @Valid @RequestBody CategoryRequestDTO categoryRequestDTO) {
-        log.info("Updating category with ID: {}", id);
-        return categoryService.updateCategory(id, categoryRequestDTO);
+    @PutMapping("/admin/categories/{categoryId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CategoryResponseDTO> updateCategory(
+            @PathVariable Long categoryId,
+            @RequestBody CategoryRequestDTO categoryRequestDTO) throws Exception {
+        return ResponseEntity.ok(categoryService.updateCategory(categoryId, categoryRequestDTO));
     }
 
-    @DeleteMapping("/admin/categories/{id}")
-    public void deleteCategory(@PathVariable("id") Long id) {
-        log.info("Deleting category with ID: {}", id);
-        categoryService.deleteCategory(id);
+    @DeleteMapping("/admin/categories/{categoryId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long categoryId) {
+        categoryService.deleteCategory(categoryId);
+        return ResponseEntity.noContent().build();
     }
 }

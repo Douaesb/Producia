@@ -3,55 +3,57 @@ package com.prod.producia.controller;
 import com.prod.producia.dto.productDto.ProductRequestDTO;
 import com.prod.producia.dto.productDto.ProductResponseDTO;
 import com.prod.producia.service.ProductService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequiredArgsConstructor
-@Slf4j
 @RequestMapping("/api")
 public class ProductController {
 
-    private final ProductService productService;
+    @Autowired
+    private ProductService productService;
 
-    @GetMapping("/user/products")
-    public Page<ProductResponseDTO> getProducts(Pageable pageable) {
-        log.info("Fetching products with pagination for user");
-        return productService.getProducts(pageable);
+    @GetMapping({"/user/products", "/admin/products"})
+    public Page<ProductResponseDTO> listProducts(
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam(required = false) String sortBy) {
+        return productService.listProducts(page, size, sortBy);
     }
 
-    @GetMapping("/user/products/search")
-    public Page<ProductResponseDTO> searchProductsByName(@RequestParam("name") String name, Pageable pageable) {
-        log.info("Searching products by name: {} with pagination", name);
-        return productService.searchProductsByName(name, pageable);
-    }
 
-    @GetMapping("/user/products/category/{categoryId}")
-    public Page<ProductResponseDTO> getProductsByCategory(@PathVariable("categoryId") Long categoryId, Pageable pageable) {
-        log.info("Fetching products for category ID: {} with pagination", categoryId);
-        return productService.getProductsByCategory(categoryId, pageable);
+    @GetMapping({"/user/products/by-category", "/admin/products/by-category"})
+    public Page<ProductResponseDTO> searchProductsByCategory(
+            @RequestParam Long categoryId,
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam(required = false) String sortBy) {
+        return productService.searchProductsByCategory(categoryId, page, size, sortBy);
     }
 
     @PostMapping("/admin/products")
-    public ProductResponseDTO addProduct(@Valid @RequestBody ProductRequestDTO productRequestDTO) {
-        log.info("Adding a new product: {}", productRequestDTO.getName());
-        return productService.addProduct(productRequestDTO);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ProductResponseDTO> addProduct(@RequestBody ProductRequestDTO productRequestDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.addProduct(productRequestDTO));
     }
 
-    @PutMapping("/admin/products/{id}")
-    public ProductResponseDTO updateProduct(@PathVariable("id") Long id,
-                                            @Valid @RequestBody ProductRequestDTO productRequestDTO) {
-        log.info("Updating product with ID: {}", id);
-        return productService.updateProduct(id, productRequestDTO);
+    @PutMapping("/admin/products/{productId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ProductResponseDTO> updateProduct(
+            @PathVariable Long productId,
+            @RequestBody ProductRequestDTO productRequestDTO) {
+        return ResponseEntity.ok(productService.updateProduct(productId, productRequestDTO));
     }
 
-    @DeleteMapping("/admin/products/{id}")
-    public void deleteProduct(@PathVariable("id") Long id) {
-        log.info("Deleting product with ID: {}", id);
-        productService.deleteProduct(id);
+    @DeleteMapping("/admin/products/{productId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long productId) {
+        productService.deleteProduct(productId);
+        return ResponseEntity.noContent().build();
     }
 }
+
