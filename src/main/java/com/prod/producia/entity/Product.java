@@ -3,6 +3,7 @@ package com.prod.producia.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import lombok.experimental.Accessors;
 
 @Getter
 @Setter
@@ -10,6 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Accessors(chain = true)
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

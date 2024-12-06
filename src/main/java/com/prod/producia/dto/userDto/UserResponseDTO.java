@@ -11,7 +11,6 @@ import lombok.*;
 public class UserResponseDTO {
 
     private Long id;
-    private String email;
     private Role role;
     private Boolean active;
 }

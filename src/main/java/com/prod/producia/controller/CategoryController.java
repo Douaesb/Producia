@@ -4,7 +4,7 @@ import com.prod.producia.dto.categoryDto.CategoryRequestDTO;
 import com.prod.producia.dto.categoryDto.CategoryResponseDTO;
 import com.prod.producia.dto.productDto.ProductResponseDTO;
 import com.prod.producia.service.CategoryService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +15,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api")
 public class CategoryController {
 
-    @Autowired
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
+
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
 
     @GetMapping({"/user/categories", "/admin/categories"})
     public Page<CategoryResponseDTO> listCategories(
