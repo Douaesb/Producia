@@ -1,5 +1,6 @@
 package com.prod.producia.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,10 +61,15 @@ public class SecurityConfig {
                         .maxSessionsPreventsLogin(true)
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/api/auth/logout")
-                        .clearAuthentication(true)
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            if (authentication != null) {
+                                System.out.println("Logout successful for user: " + authentication.getName());
+                            } else {
+                                System.out.println("Logout failed: No authentication found.");
+                            }
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.getWriter().write("Logout successful");
+                        })
                 );
 
         return http.build();

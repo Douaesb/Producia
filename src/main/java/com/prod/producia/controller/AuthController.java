@@ -5,6 +5,7 @@ import com.prod.producia.mapper.UserMapper;
 import com.prod.producia.entity.User;
 import com.prod.producia.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -74,12 +75,15 @@ public class AuthController {
 
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request) {
-        request.getSession().invalidate();
+    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
+        if (request.getSession(false) == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No active session found.");
+        }
         SecurityContextHolder.clearContext();
+        request.getSession().invalidate();
 
         log.info("User logged out successfully.");
-        return ResponseEntity.ok("User logged out successfully.");
+        return ResponseEntity.ok("Successfully logged out");
     }
 
 }
